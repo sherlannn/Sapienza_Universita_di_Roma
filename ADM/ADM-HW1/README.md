@@ -1,5 +1,5 @@
-# <font color=red>Ehsan Mokhtari - ehsan76m@gmail.com</font>
-# Homework 1
+# Ehsan Mokhtari - ehsan76m@gmail.com
+# ADM Homework 1
 
 ## Problem 1: Python Challenges
 This section comprises various Python programming exercises on HackerRank.com, covering all the mentioned topics:
