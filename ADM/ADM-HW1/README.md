@@ -1,7 +1,7 @@
-# Homework 1: Algorithmic Methods in Data Mining
+# Homework 1
 
-## Problem 1: Python Basics
-This section comprises various Python programming exercises on HackerRank, covering all the mentioned topics:
+## Problem 1: Python Challenges
+This section comprises various Python programming exercises on HackerRank.com, covering all the mentioned topics:
 - Introduction
 - Data Types
 - Strings
@@ -16,11 +16,14 @@ This section comprises various Python programming exercises on HackerRank, cover
 - Closures and Decorations
 - Numpy
 
-### Problem 2: Problem Solving Challenges
+## Problem 2: Problem Solving Challenges
 In this section, you'll find six problem-solving challenges from HackerRank:
-1. [Birthday Cake Candles](https://www.hackerrank.com/challenges/birthday-cake-candles)
-2. [Kangaroo](https://www.hackerrank.com/challenges/kangaroo)
-3. [Strange Advertising](https://www.hackerrank.com/challenges/strange-advertising)
-4. [Recursive Digit Sum](https://www.hackerrank.com/challenges/recursive-digit-sum)
-5. [Insertion Sort Part 1](https://www.hackerrank.com/challenges/insertionsort1)
-6. [Insertion Sort Part 2](https://www.hackerrank.com/challenges/insertionsort2)
+- Birthday Cake Candles
+- Kangaroo
+- Strange Advertising
+- Recursive Digit Sum
+- Insertion Sort Part 1
+- Insertion Sort Part 2
+
+## Also I have uploaded the submissions pdf file.
+## Feel free to check my [HackerRank account](https://www.hackerrank.com/sherlannn) .
