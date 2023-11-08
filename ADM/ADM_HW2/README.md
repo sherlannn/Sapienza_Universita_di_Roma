@@ -1,6 +1,6 @@
 # Adm_hw2_group6
 
-This is the repository for submit the **HOMEWORK 2**. 
+This is the repository for submit the : [**HOMEWORK 2**](https://github.com/Sapienza-University-Rome/ADM/tree/master/2023/Homework_2)
 
 The submission is done by **GROUP 6**. In the following lines we briefly explain how we organized our repository.
 
