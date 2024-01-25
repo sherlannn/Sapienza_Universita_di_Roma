@@ -1,0 +1,61 @@
+---
+title: "HW 2"
+author: "Arash Bakhshaee, Omid Ghorbani and Ehsan Mokhtari"
+output: html_document
+date: "2024-01-18"
+---
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# **SDS HOMEWORK** 
+### **Question 2**
+#### **2.2**
+This code generates simulated data for sound levels and mood levels, where mood responds to sound levels.
+
+# Simulated data generation
+```{r, echo=TRUE}
+set.seed(123)
+n_days <- 14
+n_intervals_per_day <- 24
+```
+
+# Simulate data for sound levels and mood levels
+```{r, echo=TRUE}
+simulated_data <- data.frame(
+  timestamp = rep(seq.POSIXt(from=as.POSIXct("2024-01-01"), 
+                             by="hour", length.out=n_intervals_per_day * n_days), each = 1),
+  sound_level = rnorm(n_intervals_per_day * n_days, mean = 60, sd = 10),
+  mood = rnorm(n_intervals_per_day * n_days, mean = 5 + 0.1 * rnorm(n_intervals_per_day * n_days, mean = 60, sd = 10), sd = 2)
+)
+```
+
+we assume hourly intervals for each day and generate random data for sound levels and mood levels. and we organize the data into a structured format, including a timestamp for each observation, simulated sound levels, and simulated mood levels.
+and then we use and Calculate the cumulative mean mood and compute the standard error of the mean mood at each timestamp and update the mean mood.And we use the standard error to calculate confidence intervals around the mean mood.
+
+# Function to calculate confidence intervals for mean mood
+```{r, echo=TRUE}
+calculate_ci <- function(data, alpha = 0.05) {
+  n <- nrow(data)
+  mu_hat <- cumsum(data$mood) / (1:n)
+  se <- sqrt(cumsum((data$mood - mu_hat)^2) / (1:n) / n)
+  z <- qnorm(1 - alpha / 2)
+  lower_ci <- mu_hat - z * se
+  upper_ci <- mu_hat + z * se
+  return(data.frame(timestamp = data$timestamp, mu_hat, lower_ci, upper_ci))
+}
+```
+
+Perform the entire process sequentially, updating mean mood and confidence intervals as new data points are generated.This allows for dynamic monitoring of the mood over time. and finally display the results as a data frame.
+
+# Sequential analysis
+```{r, echo=TRUE}
+ci_data <- calculate_ci(simulated_data)
+# Print the first few rows of the data with confidence intervals
+head(ci_data)
+```

@@ -1,0 +1,453 @@
+HW2 
+========================================================
+author: First Question code and analysis done by Omid Ghorbani, second question done by Ehsan Mokhtari and Arash Bakhshayee Babaroud
+========================================================
+## First Question 
+## Calculate the interval of equations to compute the performance of the two CSs in Equation 3 and Equation 4 with our classics, i.e. Hoeffding/Chebyshev/Gaussian CIs.
+
+# Implement equations for CSs and CIs
+
+### Equation 3 (CS)
+\[ \text{cs\_lower\_bound\_3} = \frac{\sum_{i=1}^{t} X_i}{t} - 1.7 \sqrt{\frac{\log(\log(2t)) + 0.72 \log\left(\frac{10.4}{\delta}\right)}{t}} \]
+\[ \text{cs\_upper\_bound\_3} = \frac{\sum_{i=1}^{t} X_i}{t} + 1.7 \sqrt{\frac{\log(\log(2t)) + 0.72 \log\left(\frac{10.4}{\delta}\right)}{t}} \]
+
+### Equation 4 (Asymptotic CS)
+\[ \text{cs\_lower\_bound\_4} = \frac{\sum_{i=1}^{t} X_i}{t} - 1.7 \sqrt{\frac{\log(\log(2t)) + 0.72 \log\left(\frac{10.4}{\delta}\right)}{t} \cdot \sqrt{\frac{\text{sample\_variance}}{t}}} \]
+\[ \text{cs\_upper\_bound\_4} = \frac{\sum_{i=1}^{t} X_i}{t} + 1.7 \sqrt{\frac{\log(\log(2t)) + 0.72 \log\left(\frac{10.4}{\delta}\right)}{t} \cdot \sqrt{\frac{\text{sample\_variance}}{t}}} \]
+
+
+
+
+calculate the interval
+========================================================
+###Function to Calculate Confidence Sequences (CSs) and Classical Confidence Intervals (CIs)
+The function `calculate_intervals` computes CSs and CIs using Equations 3 and 4, along with classical Hoeffding, Chebyshev, and Gaussian CIs.
+
+
+```{r , echo=TRUE, results='markup' }
+
+
+# Function to calculate Confidence Sequences (CSs) and classical Confidence Intervals (CIs)
+calculate_intervals <- function(data, delta, t) {
+  # Sample variance
+  sample_variance <- var(data)
+
+  # Implement equations for CSs and CIs
+  # Equation 3 (CS)
+  cs_lower_bound_3 <- (sum(data) / t) - 1.7 * sqrt((log(log(2 * t)) + 0.72 * log(10.4 / delta)) / t)
+  cs_upper_bound_3 <- (sum(data) / t) + 1.7 * sqrt((log(log(2 * t)) + 0.72 * log(10.4 / delta)) / t)
+
+  # Equation 4 (Asymptotic CS)
+  cs_lower_bound_4 <- (sum(data) / t) - 1.7 * sqrt((log(log(2 * t)) + 0.72 * log(10.4 / delta)) / t) *            sqrt(sample_variance / t)
+  
+  cs_upper_bound_4 <- (sum(data) / t )  + 1.7 * sqrt((log(log(2 * t)) + 0.72 * log(10.4 / delta)) / t) * 
+  sqrt(sample_variance / t)
+
+  # Classical Confidence Intervals
+  hoeffding_ci_lower <- mean(data) - sqrt((log(2 / delta)) / (2 * t))
+  hoeffding_ci_upper <- mean(data) + sqrt((log(2 / delta)) / (2 * t))
+
+  chebyshev_ci_lower <- mean(data) - sqrt((sample_variance) / (t * delta))
+  chebyshev_ci_upper <- mean(data) + sqrt((sample_variance) / (t * delta))
+
+  gaussian_ci_lower <- mean(data) - qnorm(1 - delta / 2) * sqrt(sample_variance / t)
+  gaussian_ci_upper <- mean(data) +  qnorm(1 - delta / 2) * sqrt(sample_variance / t)
+
+  result <- list(
+    cs_lower_bound_3 = cs_lower_bound_3,
+    cs_upper_bound_3 = cs_upper_bound_3,
+    cs_lower_bound_4 = cs_lower_bound_4,
+    cs_upper_bound_4 = cs_upper_bound_4,
+    hoeffding_ci_lower = hoeffding_ci_lower,
+    hoeffding_ci_upper = hoeffding_ci_upper,
+    chebyshev_ci_lower = chebyshev_ci_lower,
+    chebyshev_ci_upper = chebyshev_ci_upper,
+    gaussian_ci_lower = gaussian_ci_lower,
+    gaussian_ci_upper = gaussian_ci_upper
+  )
+  return(result)
+}
+
+# ... (rest of the code remains the same)
+
+```
+
+testing with equation 3
+========================================================
+
+###This simulation employs Equation 3 to calculate confidence intervals for varying sample sizes. It then assesses the miscoverage probability and average interval length across simulations, presenting the results through plots for insights into the performance of the confidence sequence
+
+```{r , echo=TRUE, results='markup' } 
+# testing for equation number 3  
+
+simulations <- 1000
+alpha <- 0.05
+t_min <- 5
+t_max <- 300
+
+# Initialize results
+miscoverage_prob <- matrix(0, nrow = simulations, ncol = t_max - t_min + 1)
+interval_length <- matrix(0, nrow = simulations, ncol = t_max - t_min + 1)
+
+# Run simulations
+set.seed(123)  # For reproducibility
+for (sim in 1:simulations) {
+  for (t in t_min:t_max) {
+    # Generate data
+    data <- rnorm(t, mean = 0)  # Replace with your population distribution
+    
+    # Calculate intervals
+    intervals <- calculate_intervals(data, alpha, t)
+    
+    # Check miscoverage and interval length
+    true_mean <- 0
+    miscoverage_prob[sim, t - t_min + 1] <- ifelse(true_mean < intervals$cs_lower_bound_3 | true_mean > intervals$cs_upper_bound_3, 1, 0)
+    interval_length[sim, t - t_min + 1] <- intervals$cs_upper_bound_3 - intervals$cs_lower_bound_3
+  }
+}
+# Calculate average miscoverage probability and interval length across simulations
+avg_miscoverage_prob <- colMeans(miscoverage_prob)
+avg_interval_length <- colMeans(interval_length)
+
+
+
+# Create a new device with 2 rows and 1 column
+t_values <- t_min:t_max
+par(mfrow = c(2, 1))
+# Plot for Interval Length
+plot(t_values, avg_interval_length, type = "l", col = "blue", lwd = 2,
+     main = "equation number 3 comparison with true parameter",
+     xlab = "Sample Size (t)", ylab = "Interval Length (CS 3)")
+grid()
+
+# Plot for Miscoverage Probability
+plot(t_values, avg_miscoverage_prob * 100, type = "l", col = "red", lwd = 2,
+     xlab = "Sample Size (t)", ylab = "Miscoverage Probability (%)")
+grid()
+# Reset the plotting layout to default
+par(mfrow = c(1, 1))
+```
+
+testing with hoefteding inequality 
+========================================================
+
+###This simulation employs hoefteding inequality  to calculate confidence intervals for varying sample sizes. It then assesses the miscoverage probability and average interval length across simulations, presenting the results through plots for insights into the performance of the confidence sequence
+```{r, echo=TRUE, results='markup' , fig.width=10, fig.height=6}
+# for testing hoefteding inequality 
+simulations <- 1000
+alpha <- 0.05
+t_min <- 5
+t_max <- 100
+# Initialize results
+miscoverage_prob <- matrix(0, nrow = simulations, ncol = t_max - t_min + 1)
+interval_length <- matrix(0, nrow = simulations, ncol = t_max - t_min + 1)
+
+# Run simulations
+set.seed(123)  # For reproducibility
+for (sim in 1:simulations) {
+  for (t in t_min:t_max) {
+    # Generate data
+    data <- rnorm(t, mean = 0)  # Replace with your population distribution
+    
+    # Calculate intervals
+    intervals <- calculate_intervals(data, alpha, t)
+    
+    # Check miscoverage and interval length
+    true_mean <- 0
+    miscoverage_prob[sim, t - t_min + 1] <- ifelse(true_mean < intervals$hoeffding_ci_lower | true_mean > intervals$hoeffding_ci_upper, 1, 0)
+    interval_length[sim, t - t_min + 1] <- intervals$hoeffding_ci_upper - intervals$hoeffding_ci_lower
+  }
+}
+
+# Calculate average miscoverage probability and interval length across simulations
+avg_miscoverage_prob <- colMeans(miscoverage_prob)
+avg_interval_length <- colMeans(interval_length)
+
+# Visualize results
+t_values <- t_min:t_max
+
+# Create a new device with 2 rows and 1 column
+par(mfrow = c(2, 1))
+
+# Plot for Interval Length
+plot(t_values, avg_interval_length, type = "l", col = "blue", lwd = 2,
+     main = "Hoefteding inequality comparison with true mean parameter",
+     xlab = "Sample Size (t)", ylab = "Interval Length (CS 3)")
+grid()
+# Plot for Miscoverage Probability
+plot(t_values, avg_miscoverage_prob * 100, type = "l", col = "red", lwd = 2,
+     xlab = "Sample Size (t)", ylab = "Miscoverage Probability (%)")
+grid()
+# Reset the plotting layout to default
+par(mfrow = c(1, 1))
+```
+
+testing with chebyshev inequality 
+========================================================
+
+###This simulation employs chebyshev inequality to calculate confidence intervals for varying sample sizes. It then assesses the miscoverage probability and average interval length across simulations, presenting the results through plots for insights into the performance of the confidence sequence
+
+``` {r, echo=TRUE, results='markup' , fig.width=10, fig.height=6}
+
+# testing for chebyshev inequality 
+
+
+simulations <- 1000
+alpha <- 0.05
+t_min <- 5
+t_max <- 100
+
+# Initialize results
+miscoverage_prob <- matrix(0, nrow = simulations, ncol = t_max - t_min + 1)
+interval_length <- matrix(0, nrow = simulations, ncol = t_max - t_min + 1)
+
+# Run simulations
+set.seed(123)  # For reproducibility
+for (sim in 1:simulations) {
+  for (t in t_min:t_max) {
+    # Generate data
+    data <- rnorm(t, mean = 0)  # Replace with your population distribution
+    
+    # Calculate intervals
+    intervals <- calculate_intervals(data, alpha, t)
+    
+    # Check miscoverage and interval length
+    true_mean <- 0
+    miscoverage_prob[sim, t - t_min + 1] <- ifelse(true_mean < intervals$chebyshev_ci_lower | true_mean > intervals$chebyshev_ci_upper, 1, 0)
+    interval_length[sim, t - t_min + 1] <- intervals$chebyshev_ci_upper - intervals$chebyshev_ci_lower
+  }
+}
+
+# Calculate average miscoverage probability and interval length across simulations
+avg_miscoverage_prob <- colMeans(miscoverage_prob)
+avg_interval_length <- colMeans(interval_length)
+
+# Visualize results
+
+t_values <- t_min:t_max
+# Create a new device with 2 rows and 1 column
+par(mfrow = c(2, 1))
+
+# Plot for Interval Length
+plot(t_values, avg_interval_length, type = "l", col = "blue", lwd = 2,
+     main = "chebyshev comparison with true mean parameter",
+     xlab = "Sample Size (t)", ylab = "Interval Length (CS 3)")
+grid()
+
+# Plot for Miscoverage Probability
+plot(t_values, avg_miscoverage_prob * 100, type = "l", col = "red", lwd = 2,
+     xlab = "Sample Size (t)", ylab = "Miscoverage Probability (%)")
+grid()
+
+# Reset the plotting layout to default
+par(mfrow = c(1, 1))
+
+
+```
+
+testing with equation number 4
+========================================================
+
+###This simulation employs equation number 4 to calculate confidence intervals for varying sample sizes. It then assesses the miscoverage probability and average interval length across simulations, presenting the results through plots for insights into the performance of the confidence sequence
+
+```{r, echo=TRUE, results='markup' , fig.width=10, fig.height=6}
+
+# testing for equation number 4
+
+
+simulations <- 1000
+alpha <- 0.05
+t_min <- 5
+t_max <- 100
+
+# Initialize results
+miscoverage_prob <- matrix(0, nrow = simulations, ncol = t_max - t_min + 1)
+interval_length <- matrix(0, nrow = simulations, ncol = t_max - t_min + 1)
+
+# Run simulations
+set.seed(123)  # For reproducibility
+for (sim in 1:simulations) {
+  for (t in t_min:t_max) {
+    # Generate data
+    data <- rnorm(t, mean = 0)  # Replace with your population distribution
+    
+    # Calculate intervals
+    intervals <- calculate_intervals(data, alpha, t)
+    
+    # Check miscoverage and interval length
+    true_mean <- 0
+    miscoverage_prob[sim, t - t_min + 1] <- ifelse(true_mean < intervals$cs_lower_bound_4 | true_mean > intervals$cs_upper_bound_4, 1, 0)
+    interval_length[sim, t - t_min + 1] <- intervals$cs_upper_bound_4 - intervals$cs_lower_bound_4
+  }
+}
+
+# Calculate average miscoverage probability and interval length across simulations
+avg_miscoverage_prob <- colMeans(miscoverage_prob)
+avg_interval_length <- colMeans(interval_length)
+
+# Visualize results
+
+t_values <- t_min:t_max
+# Create a new device with 2 rows and 1 column
+par(mfrow = c(2, 1))
+
+# Plot for Interval Length
+plot(t_values, avg_interval_length, type = "l", col = "blue", lwd = 2,
+     main = "Equation 4 comparison with true mean parameter",
+     xlab = "Sample Size (t)", ylab = "Interval Length (CS 3)")
+grid()
+
+# Plot for Miscoverage Probability
+plot(t_values, avg_miscoverage_prob * 100, type = "l", col = "red", lwd = 2,
+     xlab = "Sample Size (t)", ylab = "Miscoverage Probability (%)")
+grid()
+
+# Reset the plotting layout to default
+par(mfrow = c(1, 1))
+
+
+
+
+
+
+
+```
+
+testing with Gaussian Distribution 
+====================================
+###This simulation employs Gaussian Dist to calculate confidence intervals for varying sample sizes. It then assesses the miscoverage probability and average interval length across simulations, presenting the results through plots for insights into the performance of the confidence sequence
+
+``` {r, echo=TRUE, results='markup' , fig.width=10, fig.height=6}
+simulations <- 1000
+alpha <- 0.05
+t_min <- 5
+t_max <- 300
+
+# Initialize results
+miscoverage_prob <- matrix(0, nrow = simulations, ncol = t_max - t_min + 1)
+interval_length <- matrix(0, nrow = simulations, ncol = t_max - t_min + 1)
+
+# Run simulations
+set.seed(123)  # For reproducibility
+for (sim in 1:simulations) {
+  for (t in t_min:t_max) {
+    # Generate data
+    data <- rnorm(t, mean = 0)  # Replace with your population distribution
+    
+    # Calculate intervals
+    intervals <- calculate_intervals(data, alpha, t)
+    
+    # Check miscoverage and interval length
+    true_mean <- 0
+    miscoverage_prob[sim, t - t_min + 1] <- ifelse(true_mean < intervals$gaussian_ci_lower | true_mean > intervals$gaussian_ci_upper, 1, 0)
+    interval_length[sim, t - t_min + 1] <- intervals$gaussian_ci_upper - intervals$gaussian_ci_lower
+  }
+}
+
+# Calculate average miscoverage probability and interval length across simulations
+avg_miscoverage_prob <- colMeans(miscoverage_prob)
+avg_interval_length <- colMeans(interval_length)
+
+# Visualize results
+
+t_values <- t_min:t_max
+# Create a new device with 2 rows and 1 column
+par(mfrow = c(2, 1))
+
+# Plot for Interval Length
+plot(t_values, avg_interval_length, type = "l", col = "blue", lwd = 2,
+     main = "gaussian interval comparison with true mean parameter",
+     xlab = "Sample Size (t)", ylab = "Interval Length (CS 3)")
+grid()
+
+# Plot for Miscoverage Probability
+plot(t_values, avg_miscoverage_prob * 100, type = "l", col = "red", lwd = 2,
+     xlab = "Sample Size (t)", ylab = "Miscoverage Probability (%)")
+grid()
+
+# Reset the plotting layout to default
+par(mfrow = c(1, 1))
+
+``` 
+
+Summary and findings
+=======================
+
+
+## Introduction
+
+In all cases, the average length decreases as the sample size increases. However, different inequalities provide insights into the behavior of misconvergence under varying conditions.
+
+## Misconvergence Inequalities
+
+### 1. Hoeffding's Inequality
+
+- No clear trend observed in misconvergence with an increase in sample size.
+
+### 2. Chebyshev's Inequality
+
+- Clear trend: Misconvergence decreases as the sample size increases.
+
+### 3. Equation 4
+
+- With an increase in sample size, the probability of misconvergence increases.
+- This is due to the relationship with sample variance; as the sample size increases, the variance decreases, leading to smaller confidence intervals and a higher chance of misinterpretation.
+
+### 4. Gaussian Distribution
+
+- Misconvergence decreases with an increase in the number of samples.
+- The trend is not as smooth as Chebyshev's and exhibits some noise.
+
+## Conclusion
+
+Consider the characteristics of each inequality and distribution when analyzing misconvergence trends. Understanding these behaviors is crucial for robust statistical analysis.
+
+## -------------------------------------------------------------------------------------------------------------------- ##
+## -------------------------------------------------------------------------------------------------------------------- ##
+
+## Question 2
+
+This code generates simulated data for sound levels and mood levels, where mood responds to sound levels.
+
+# Simulated data generation
+```{r, echo=TRUE}
+set.seed(123)
+n_days <- 14
+n_intervals_per_day <- 24
+```
+
+# Simulate data for sound levels and mood levels
+```{r, echo=TRUE}
+simulated_data <- data.frame(
+  timestamp = rep(seq.POSIXt(from=as.POSIXct("2024-01-01"), 
+                             by="hour", length.out=n_intervals_per_day * n_days), each = 1),
+  sound_level = rnorm(n_intervals_per_day * n_days, mean = 60, sd = 10),
+  mood = rnorm(n_intervals_per_day * n_days, mean = 5 + 0.1 * rnorm(n_intervals_per_day * n_days, mean = 60, sd = 10), sd = 2)
+)
+```
+
+we assume hourly intervals for each day and generate random data for sound levels and mood levels. and we organize the data into a structured format, including a time stamp for each observation, simulated sound levels, and simulated mood levels.
+and then we use and Calculate the cumulative mean mood and compute the standard error of the mean mood at each timestamp and update the mean mood.And we use the standard error to calculate confidence intervals around the mean mood.
+
+# Function to calculate confidence intervals for mean mood
+```{r, echo=TRUE}
+calculate_ci <- function(data, alpha = 0.05) {
+  n <- nrow(data)
+  mu_hat <- cumsum(data$mood) / (1:n)
+  se <- sqrt(cumsum((data$mood - mu_hat)^2) / (1:n) / n)
+  z <- qnorm(1 - alpha / 2)
+  lower_ci <- mu_hat - z * se
+  upper_ci <- mu_hat + z * se
+  return(data.frame(timestamp = data$timestamp, mu_hat, lower_ci, upper_ci))
+}
+```
+
+Perform the entire process sequentially, updating mean mood and confidence intervals as new data points are generated.This allows for dynamic monitoring of the mood over time. and finally display the results as a data frame.
+
+# Sequential analysis
+```{r, echo=TRUE}
+ci_data <- calculate_ci(simulated_data)
+# Print the first few rows of the data with confidence intervals
+head(ci_data)
+```
+
