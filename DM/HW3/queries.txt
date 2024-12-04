@@ -1,0 +1,158 @@
+//1. percentage of male and females
+
+// Count the total number of persons
+MATCH (p:Person)
+WITH count(p) AS totalPersons
+
+// Count the number of males and females
+MATCH (p:Person)-[:HAS_GENDER]->(g:Gender)
+WITH totalPersons, g.name AS gender, count(p) AS genderCount
+RETURN
+  gender,
+  genderCount,
+  round((genderCount * 100.0 / totalPersons), 2) AS percentage
+
+//************************************************************
+
+//2. top 3 Hours of the day when most interviews which are conducted.
+
+MATCH (p:Person)
+WITH p.hour AS hour, count(*) AS interviewCount
+ORDER BY interviewCount DESC
+LIMIT 3
+RETURN hour, interviewCount
+
+//*********************************************************
+
+//3. top 3 countries with the most interviews which are conducted.
+
+// Count the number of interviews conducted in each country
+MATCH (p)-[:LIVES_IN]->(c:Country)
+WITH c.name AS country, count(*) AS interviewCount
+ORDER BY interviewCount DESC
+LIMIT 3
+RETURN country, interviewCount
+
+//*********************************************************
+
+//4. Find the percentage of persons who reported changes in habits and growing stress
+
+// Count the total number of persons
+MATCH (p:Person)
+WITH count(p) AS totalPersons
+
+// Count the number of persons reporting changes in habits
+MATCH (p1:Person)-[:HAS_ATTRIBUTE]->(:Attribute {name: 'Changes_Habits', value: 'Yes'})
+
+// Count the number of persons reporting growing stress
+MATCH (p2:Person)-[:HAS_ATTRIBUTE]->(:Attribute {name: 'Growing_Stress', value: 'Yes'})
+
+// Count the number of persons reporting both habit changes and growing stress
+WITH totalPersons, count(DISTINCT p1) AS habitsCount, count(DISTINCT p2) AS stressCount
+MATCH (p3:Person)-[:HAS_ATTRIBUTE]->(:Attribute {name: 'Changes_Habits', value: 'Yes'})
+MATCH (p4:Person)-[:HAS_ATTRIBUTE]->(:Attribute {name: 'Growing_Stress', value: 'Yes'})
+WITH totalPersons, habitsCount, stressCount, count(DISTINCT p3) AS bothCount
+
+// Calculate the percentage of persons having both habit changes and growing stress
+RETURN (bothCount * 100.0 / totalPersons) AS percentage
+
+
+//************************************************************
+
+//5. percentage of people in each country facing social weakness
+
+// Count the total number of persons in each country
+MATCH (p:Person)-[:LIVES_IN]->(c:Country)
+WITH c, p.gender AS gender, count(p) AS totalPersons
+ORDER BY c, gender
+
+// Count the number of males and females reporting social weakness in each country
+OPTIONAL MATCH (p:Person)-[:LIVES_IN]->(c)
+WHERE EXISTS((p)-[:HAS_ATTRIBUTE]->(:Attribute {name: 'Social_Weakness', value: 'Yes'}))
+WITH c, gender, count(p) AS socialWeaknessCount, totalPersons
+
+// Calculate the percentage of males and females reporting social weakness in each country
+RETURN
+  c.name AS country,
+  gender,
+  (socialWeaknessCount * 100.0 / totalPersons) AS socialWeaknessPercentage
+ORDER BY country, gender
+//************************************************************
+
+//6 . average change in the habits 
+
+// Count the total number of persons
+MATCH (p:Person)
+WITH count(p) AS totalPersons
+
+// Count the number of persons reporting changes in habits
+MATCH (p:Person)-[:HAS_ATTRIBUTE]->(:Attribute {name: 'Changes_Habits', value: 'Yes'})
+WITH totalPersons, count(p) AS changesHabitsCount
+
+// Calculate the average changes in habits percentage
+RETURN round((changesHabitsCount * 100.0 / totalPersons), 2) AS avg_changes_habits_percentage
+
+//***************************************************************
+
+//7. top 5 countries with the highest average growing stress
+// Count the total number of persons in each country
+MATCH (p:Person)-[:LIVES_IN]->(c:Country)
+WITH c, count(p) AS totalPersons
+
+// Count the number of persons reporting growing stress in each country
+OPTIONAL MATCH (p:Person)-[:LIVES_IN]->(c)
+WHERE (p)-[:HAS_ATTRIBUTE]->(:Attribute {name: 'Growing_Stress', value: 'Yes'})
+WITH c, totalPersons, count(p) AS growingStressCount
+
+// Calculate the average growing stress percentage for each country
+WITH c.name AS country, growingStressCount, totalPersons, 
+     round((growingStressCount * 100.0 / totalPersons), 2) AS avgGrowingStressPercentage
+ORDER BY avgGrowingStressPercentage DESC
+LIMIT 5
+
+// Return the top 5 countries with the highest average growing stress
+RETURN country, avgGrowingStressPercentage
+
+//**************************************************************
+
+//8.average percentage of reported social weaknesses per gender
+// Aggregate the counts of persons and persons reporting social weaknesses per gender
+MATCH (p:Person)-[:HAS_GENDER]->(g:Gender)
+WITH g.name AS gender,
+     count(DISTINCT p) AS totalPersons,
+     sum(CASE WHEN (p)-[:HAS_ATTRIBUTE]->(:Attribute {name: 'Social_Weakness', value: 'Yes'}) THEN 1 ELSE 0 END) AS socialWeaknessCount
+
+// Calculate the average percentage of social weaknesses per gender
+RETURN gender, 
+       round((socialWeaknessCount * 100.0 / totalPersons), 2) AS avgSocialWeaknessPercentage
+
+//*************************************************************
+
+//9. top 5 countries with self employed = Yes
+// Match persons with "Self_Employed" attribute set to "Yes" in each country
+MATCH (p:Person)-[:LIVES_IN]->(c:Country)
+WHERE (p)-[:HAS_ATTRIBUTE]->(:Attribute {name: 'self_employed', value: 'Yes'})
+WITH c.name AS country, count(DISTINCT p) AS selfEmployedCount
+
+// Order by the count of self-employed persons and limit to top 5 countries
+ORDER BY selfEmployedCount DESC
+LIMIT 5
+
+// Return the top 5 countries with the highest number of self-employed persons
+RETURN country, selfEmployedCount
+
+
+//************************************************************
+
+//10- top 5 countries where respondents reported growing stress but had no family history, 
+//along with the count of interviews conducted in each of those countries.
+
+ 
+MATCH (p:Person)-[:HAS_ATTRIBUTE]->(gs:Attribute {name: 'Growing_Stress', value: 'Yes'})
+MATCH (p)-[:HAS_ATTRIBUTE]->(fh:Attribute {name: 'family_history', value: 'No'})
+MATCH (p)-[:LIVES_IN]->(c:Country)
+WITH c.name AS country, COUNT(p) AS Number_of_interview
+RETURN country, Number_of_interview
+ORDER BY Number_of_interview DESC
+LIMIT 5;
+

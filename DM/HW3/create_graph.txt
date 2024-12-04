@@ -1,0 +1,115 @@
+// Load Person nodes
+LOAD CSV WITH HEADERS FROM 'file:///mental_health_data.csv' AS row
+CREATE (:Person {id: toInteger(row.id), year: toInteger(row.Year), month: toInteger(row.Month), hour: toInteger(row.Hour)});
+
+// Load Gender nodes and relationships
+LOAD CSV WITH HEADERS FROM 'file:///mental_health_data.csv' AS row
+MERGE (g:Gender {name: row.Gender})
+WITH g, row
+MATCH (p:Person {id: toInteger(row.id)})
+MERGE (p)-[:HAS_GENDER]->(g);
+
+// Load Country nodes and relationships
+LOAD CSV WITH HEADERS FROM 'file:///mental_health_data.csv' AS row
+MERGE (c:Country {name: row.Country})
+WITH c, row
+MATCH (p:Person {id: toInteger(row.id)})
+MERGE (p)-[:LIVES_IN]->(c);
+
+// Load Occupation nodes and relationships
+LOAD CSV WITH HEADERS FROM 'file:///mental_health_data.csv' AS row
+MERGE (o:Occupation {name: row.Occupation})
+WITH o, row
+MATCH (p:Person {id: toInteger(row.id)})
+MERGE (p)-[:WORKS_AS]->(o);
+
+// Load self_employed attribute nodes and relationships
+LOAD CSV WITH HEADERS FROM 'file:///mental_health_data.csv' AS row
+MERGE (se:Attribute {name: 'self_employed', value: row.self_employed})
+WITH se, row
+MATCH (p:Person {id: toInteger(row.id)})
+MERGE (p)-[:HAS_ATTRIBUTE]->(se);
+
+// Load family_history attribute nodes and relationships
+LOAD CSV WITH HEADERS FROM 'file:///mental_health_data.csv' AS row
+MERGE (fh:Attribute {name: 'family_history', value: row.family_history})
+WITH fh, row
+MATCH (p:Person {id: toInteger(row.id)})
+MERGE (p)-[:HAS_ATTRIBUTE]->(fh);
+
+// Load treatment attribute nodes and relationships
+LOAD CSV WITH HEADERS FROM 'file:///mental_health_data.csv' AS row
+MERGE (t:Attribute {name: 'treatment', value: row.treatment})
+WITH t, row
+MATCH (p:Person {id: toInteger(row.id)})
+MERGE (p)-[:HAS_ATTRIBUTE]->(t);
+
+// Load Days_Indoors attribute nodes and relationships
+LOAD CSV WITH HEADERS FROM 'file:///mental_health_data.csv' AS row
+MERGE (di:Attribute {name: 'Days_Indoors', value: row.Days_Indoors})
+WITH di, row
+MATCH (p:Person {id: toInteger(row.id)})
+MERGE (p)-[:HAS_ATTRIBUTE]->(di);
+
+// Load Growing_Stress attribute nodes and relationships
+LOAD CSV WITH HEADERS FROM 'file:///mental_health_data.csv' AS row
+MERGE (gs:Attribute {name: 'Growing_Stress', value: row.Growing_Stress})
+WITH gs, row
+MATCH (p:Person {id: toInteger(row.id)})
+MERGE (p)-[:HAS_ATTRIBUTE]->(gs);
+
+// Load Changes_Habits attribute nodes and relationships
+LOAD CSV WITH HEADERS FROM 'file:///mental_health_data.csv' AS row
+MERGE (ch:Attribute {name: 'Changes_Habits', value: row.Changes_Habits})
+WITH ch, row
+MATCH (p:Person {id: toInteger(row.id)})
+MERGE (p)-[:HAS_ATTRIBUTE]->(ch);
+
+// Load Mental_Health_History attribute nodes and relationships
+LOAD CSV WITH HEADERS FROM 'file:///mental_health_data.csv' AS row
+MERGE (mhh:Attribute {name: 'Mental_Health_History', value: row.Mental_Health_History})
+WITH mhh, row
+MATCH (p:Person {id: toInteger(row.id)})
+MERGE (p)-[:HAS_ATTRIBUTE]->(mhh);
+
+// Load Mood_Swings attribute nodes and relationships
+LOAD CSV WITH HEADERS FROM 'file:///mental_health_data.csv' AS row
+MERGE (ms:Attribute {name: 'Mood_Swings', value: row.Mood_Swings})
+WITH ms, row
+MATCH (p:Person {id: toInteger(row.id)})
+MERGE (p)-[:HAS_ATTRIBUTE]->(ms);
+
+// Load Coping_Struggles attribute nodes and relationships
+LOAD CSV WITH HEADERS FROM 'file:///mental_health_data.csv' AS row
+MERGE (cs:Attribute {name: 'Coping_Struggles', value: row.Coping_Struggles})
+WITH cs, row
+MATCH (p:Person {id: toInteger(row.id)})
+MERGE (p)-[:HAS_ATTRIBUTE]->(cs);
+
+// Load Work_Interest attribute nodes and relationships
+LOAD CSV WITH HEADERS FROM 'file:///mental_health_data.csv' AS row
+MERGE (wi:Attribute {name: 'Work_Interest', value: row.Work_Interest})
+WITH wi, row
+MATCH (p:Person {id: toInteger(row.id)})
+MERGE (p)-[:HAS_ATTRIBUTE]->(wi);
+
+// Load Social_Weakness attribute nodes and relationships
+LOAD CSV WITH HEADERS FROM 'file:///mental_health_data.csv' AS row
+MERGE (sw:Attribute {name: 'Social_Weakness', value: row.Social_Weakness})
+WITH sw, row
+MATCH (p:Person {id: toInteger(row.id)})
+MERGE (p)-[:HAS_ATTRIBUTE]->(sw);
+
+// Load mental_health_interview attribute nodes and relationships
+LOAD CSV WITH HEADERS FROM 'file:///mental_health_data.csv' AS row
+MERGE (mhi:Attribute {name: 'mental_health_interview', value: row.mental_health_interview})
+WITH mhi, row
+MATCH (p:Person {id: toInteger(row.id)})
+MERGE (p)-[:HAS_ATTRIBUTE]->(mhi);
+
+// Load care_options attribute nodes and relationships
+LOAD CSV WITH HEADERS FROM 'file:///mental_health_data.csv' AS row
+MERGE (co:Attribute {name: 'care_options', value: row.care_options})
+WITH co, row
+MATCH (p:Person {id: toInteger(row.id)})
+MERGE (p)-[:HAS_ATTRIBUTE]->(co);
